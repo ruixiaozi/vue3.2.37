@@ -289,6 +289,7 @@ export const queuePostRenderEffect = __FEATURE_SUSPENSE__
  * })
  * ```
  */
+// 创建渲染器
 export function createRenderer<
   HostNode = RendererNode,
   HostElement = RendererElement
@@ -351,10 +352,11 @@ function baseCreateRenderer(
 
   // Note: functions inside this closure should use `const xxx = () => {}`
   // style in order to prevent being inlined by minifiers.
+  // patch方法，替换或者创建对应的dom
   const patch: PatchFn = (
-    n1,
-    n2,
-    container,
+    n1, // 旧vnode
+    n2, // 新vnode
+    container, // 容器dom
     anchor = null,
     parentComponent = null,
     parentSuspense = null,
@@ -362,11 +364,14 @@ function baseCreateRenderer(
     slotScopeIds = null,
     optimized = __DEV__ && isHmrUpdating ? false : !!n2.dynamicChildren
   ) => {
+    // 如果两个结点完全一样，直接返回，不需要处理
     if (n1 === n2) {
       return
     }
 
     // patching & not same type, unmount old tree
+    // 旧vnode存在，但是类型不同（type或者key不同），直接卸载旧vnode
+    // 则仅有（type相同、key也相同）的情况才会复用
     if (n1 && !isSameVNodeType(n1, n2)) {
       anchor = getNextHostNode(n1)
       unmount(n1, parentComponent, parentSuspense, true)
@@ -380,12 +385,15 @@ function baseCreateRenderer(
 
     const { type, ref, shapeFlag } = n2
     switch (type) {
+      // 文本节点
       case Text:
         processText(n1, n2, container, anchor)
         break
+      // 注释节点
       case Comment:
         processCommentNode(n1, n2, container, anchor)
         break
+      // 静态节点（Vue）
       case Static:
         if (n1 == null) {
           mountStaticNode(n2, container, anchor, isSVG)
@@ -393,6 +401,7 @@ function baseCreateRenderer(
           patchStaticNode(n1, n2, container, isSVG)
         }
         break
+      // 片段节点（组件内有多个根元素的情况）
       case Fragment:
         processFragment(
           n1,
