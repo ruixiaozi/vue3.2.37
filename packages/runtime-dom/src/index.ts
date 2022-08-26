@@ -35,10 +35,12 @@ const rendererOptions = /*#__PURE__*/ extend({ patchProp }, nodeOps)
 
 // lazy create the renderer - this makes core renderer logic tree-shakable
 // in case the user only imports reactivity utilities from Vue.
+// 惰性创建渲染器-这使得核心渲染器逻tree-shakable，如果用户只从Vue导入reactivity utilities
 let renderer: Renderer<Element | ShadowRoot> | HydrationRenderer
 
 let enabledHydration = false
 
+// 惰性创建渲染器。返回确保安全的渲染器，用户没有使用render的话，则会被tree-shakable
 function ensureRenderer() {
   return (
     renderer ||
@@ -55,6 +57,8 @@ function ensureHydrationRenderer() {
 }
 
 // use explicit type casts here to avoid import() calls in rolled-up d.ts
+// 在这里使用显式类型转换，以避免在卷起的d.ts中调用import() 
+// 全局render导出
 export const render = ((...args) => {
   ensureRenderer().render(...args)
 }) as RootRenderFunction<Element | ShadowRoot>
@@ -63,6 +67,7 @@ export const hydrate = ((...args) => {
   ensureHydrationRenderer().hydrate(...args)
 }) as RootHydrateFunction
 
+// createApp全局导出
 export const createApp = ((...args) => {
   const app = ensureRenderer().createApp(...args)
 
